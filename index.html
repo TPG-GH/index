@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7x7 ビンゴゲーム</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            text-align: center;
+        }
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+        }
+        #bingo-board {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .cell:hover {
+            background-color: #e0e0e0;
+        }
+        .cell.selected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #bingo-message {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin-top: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>7x7 ビンゴゲーム</h1>
+        <div id="bingo-board"></div>
+        <div id="bingo-message">ビンゴ！</div>
+    </div>
+
+    <script>
+        const board = document.getElementById('bingo-board');
+        const message = document.getElementById('bingo-message');
+        const size = 7;
+        let cells = [];
+
+        function createBoard() {
+            for (let i = 0; i < size * size; i++) {
+                const cell = document.createElement('button');
+                cell.className = 'cell';
+                cell.textContent = i + 1;
+                cell.addEventListener('click', () => toggleCell(cell));
+                board.appendChild(cell);
+                cells.push(cell);
+            }
+        }
+
+        function toggleCell(cell) {
+            cell.classList.toggle('selected');
+            checkBingo();
+        }
+
+        function checkBingo() {
+            // 行、列、対角線のチェック
+            if (checkLines() || checkDiagonals()) {
+                showBingoMessage();
+            }
+        }
+
+        function checkLines() {
+            for (let i = 0; i < size; i++) {
+                if (checkRow(i) || checkColumn(i)) return true;
+            }
+            return false;
+        }
+
+        function checkRow(row) {
+            return cells.slice(row * size, (row + 1) * size).every(cell => cell.classList.contains('selected'));
+        }
+
+        function checkColumn(col) {
+            return cells.filter((_, index) => index % size === col).every(cell => cell.classList.contains('selected'));
+        }
+
+        function checkDiagonals() {
+            const mainDiagonal = cells.filter((_, index) => index % (size + 1) === 0);
+            const antiDiagonal = cells.filter((_, index) => index > 0 && index < size * size - 1 && index % (size - 1) === 0);
+            return mainDiagonal.every(cell => cell.classList.contains('selected')) ||
+                   antiDiagonal.every(cell => cell.classList.contains('selected'));
+        }
+
+        function showBingoMessage() {
+            message.style.opacity = '1';
+            cells.forEach(cell => cell.disabled = true);
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            const confettiCount = 200;
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = '-10px';
+                confetti.style.borderRadius = '50%';
+                document.body.appendChild(confetti);
+
+                const animation = confetti.animate([
+                    { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+                    { transform: `translateY(100vh) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                ], {
+                    duration: Math.random() * 3000 + 2000,
+                    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                });
+
+                animation.onfinish = () => confetti.remove();
+            }
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>
